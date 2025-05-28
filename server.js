@@ -7,15 +7,17 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 
-// Connect to database with error handling
+// Connect to database
 connectDB().catch((error) => {
   console.error('Failed to connect to MongoDB:', error.message);
-  process.exit(1); // Exit if connection fails
+  process.exit(1);
 });
 
+// CORS configuration for frontend
 app.use(cors({ origin: 'https://op-frontend-five.vercel.app' }));
 app.use(express.json());
-app.use('/images', express.static('public/images'));
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/operators', operatorRoutes);
 app.use('/api/attendance', attendanceRoutes);
