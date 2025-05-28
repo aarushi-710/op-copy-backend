@@ -13,7 +13,7 @@ connectDB().catch((error) => {
   process.exit(1); // Exit if connection fails
 });
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'https://op-frontend-five.vercel.app' }));
 app.use(express.json());
 app.use('/images', express.static('public/images'));
 app.use('/api/auth', authRoutes);
