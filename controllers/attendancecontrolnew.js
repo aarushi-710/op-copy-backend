@@ -1,3 +1,4 @@
+
 const getAttendanceModel = require('../models/Attendance');
 const getOperatorModel = require('../models/Operator');
 
@@ -47,16 +48,9 @@ exports.markAttendance = async (req, res) => {
     const finalTimestamp = now.toISOString(); // Full ISO 8601 timestamp
     console.log('Marking attendance with timestamp:', finalTimestamp);
 
-    // Find the latest attendance for this operator on this date
-    const lastAttendance = await Attendance.findOne({ operatorId, date }).sort({ timestamp: -1 });
-
-    if (lastAttendance) {
-      const lastTime = new Date(lastAttendance.timestamp);
-      const diffMs = now - lastTime;
-      const diffMinutes = diffMs / (1000 * 60);
-      if (diffMinutes < 10) {
-        return res.status(400).json({ message: 'Attendance already marked for this operator within the last 10 minutes' });
-      }
+    const existing = await Attendance.findOne({ operatorId, date });
+    if (existing) {
+      return res.status(400).json({ message: 'Attendance already marked for this operator today' });
     }
 
     const newAttendance = new Attendance({
@@ -115,5 +109,3 @@ exports.exportAttendance = async (req, res) => {
     res.status(500).json({ message: 'Failed to export attendance', error: error.message });
   }
 };
-
-
