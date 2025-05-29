@@ -47,6 +47,18 @@ exports.markAttendance = async (req, res) => {
     const finalTimestamp = now.toISOString(); // Full ISO 8601 timestamp
     console.log('Marking attendance with timestamp:', finalTimestamp);
 
+    // Find the latest attendance for this operator on this date
+    const lastAttendance = await Attendance.findOne({ operatorId, date }).sort({ timestamp: -1 });
+
+    if (lastAttendance) {
+      const lastTime = new Date(lastAttendance.timestamp);
+      const diffMs = now - lastTime;
+      const diffHours = diffMs / (1000 * 60 * 60);
+      if (diffHours < 1) {
+        return res.status(400).json({ message: 'Attendance already marked for this operator within the last hour' });
+      }
+    }
+
     const existing = await Attendance.findOne({ operatorId, date });
     if (existing) {
       return res.status(400).json({ message: 'Attendance already marked for this operator today' });
