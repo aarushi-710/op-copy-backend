@@ -53,7 +53,7 @@ exports.markAttendance = async (req, res) => {
     if (lastAttendance) {
       const lastTime = new Date(lastAttendance.timestamp);
       const diffMs = now - lastTime;
-      const diffHours = diffMs / (1000 * 60 * 60);
+      const diffHours = diffMs / (10 * 60 * 60);
       if (diffHours < 1) {
         return res.status(400).json({ message: 'Attendance already marked for this operator within the last hour' });
       }
