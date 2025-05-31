@@ -14,7 +14,7 @@ connectDB().catch((error) => {
 });
 
 // CORS configuration for frontend
-app.use(cors({ origin: 'https://op-frontend-five.vercel.app' }));
+app.use(cors({ origin: 'https://op-copy-frontend.vercel.app' }));
 app.use(express.json());
 
 // Routes
