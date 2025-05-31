@@ -1,6 +1,5 @@
 const getAttendanceModel = require('../models/Attendance');
 const getOperatorModel = require('../models/Operator');
-const ExcelJS = require('exceljs'); // Add this at the top of your file
 
 exports.getAttendance = async (req, res) => {
   const { line, date } = req.params;
@@ -103,44 +102,14 @@ exports.exportAttendance = async (req, res) => {
       path: 'operatorId',
       model: Operator,
     });
-
-    // Create workbook and worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Attendance');
-
-    // Define columns
-    worksheet.columns = [
-      { header: 'Date', key: 'Date', width: 20 },
-      { header: 'Operator Name', key: 'Operator Name', width: 25 },
-      { header: 'Employee ID', key: 'Employee ID', width: 20 },
-      { header: 'Station', key: 'Station', width: 20 },
-      { header: 'Status', key: 'Status', width: 15 },
-    ];
-
-    // Add rows
-    attendance.forEach((a) => {
-      worksheet.addRow({
-        Date: a.timestamp || new Date(a.date + 'T00:00:00.000Z').toISOString(),
-        'Operator Name': a.operatorId?.name || 'Unknown',
-        'Employee ID': a.operatorId?.employeeId || 'N/A',
-        Station: a.operatorId?.station || 'N/A',
-        Status: a.status,
-      });
-    });
-
-    // Set headers for Excel file
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=attendance_${line}_${from}_to_${to}.xlsx`
-    );
-
-    // Write workbook to response
-    await workbook.xlsx.write(res);
-    res.end();
+    const data = attendance.map((a) => ({
+      Date: a.timestamp || new Date(a.date + 'T00:00:00.000Z').toISOString(),
+      'Operator Name': a.operatorId?.name || 'Unknown',
+      'Employee ID': a.operatorId?.employeeId || 'N/A',
+      Station: a.operatorId?.station || 'N/A',
+      Status: a.status,
+    }));
+    res.status(200).json(data);
   } catch (error) {
     console.error(`Error exporting attendance for line ${line}:`, error.message);
     res.status(500).json({ message: 'Failed to export attendance', error: error.message });
