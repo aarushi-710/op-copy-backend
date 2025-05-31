@@ -4,7 +4,6 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const operatorRoutes = require('./routes/operatorRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
-const mqtt = require('mqtt');
 
 const app = express();
 
@@ -17,20 +16,6 @@ connectDB().catch((error) => {
 // CORS configuration for frontend
 app.use(cors({ origin: 'https://op-copy-frontend.vercel.app' }));
 app.use(express.json());
-
-// MQTT client setup for HiveMQ Cloud
-const mqttClient = mqtt.connect('wss://abbc751b5b434be4ad192133b471d7bb.s1.eu.hivemq.cloud:8883/mqtt', {
-  username: 'hivemq.webclient.1748685268618',
-  password: '.W9kNFm>Z8?lM35j%Ana',
-});
-
-mqttClient.on('connect', () => {
-  console.log('Connected to HiveMQ Cloud MQTT broker');
-});
-mqttClient.on('error', (err) => {
-  console.error('MQTT connection error:', err);
-});
-app.set('mqttClient', mqttClient);
 
 // Routes
 app.use('/api/auth', authRoutes);
