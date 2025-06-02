@@ -14,17 +14,16 @@ exports.getOperators = async (req, res) => {
 
 exports.addOperator = async (req, res) => {
   const { line } = req.params;
-  const { name, employeeId, station, imagePath } = req.body;
+  const { name, employeeId, station, imagePath, ledIndex } = req.body;
 
   try {
-    if (!name || !employeeId || !station || !imagePath) {
+    if (!name || !employeeId || !station || !imagePath || ledIndex === undefined) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
     const Operator = getOperatorModel(line);
-    const newOperator = new Operator({ name, employeeId, station, imagePath });
+    const newOperator = new Operator({ name, employeeId, station, imagePath, ledIndex });
     await newOperator.save();
-    console.log(`Operator ${name} saved with imagePath at ${imagePath}`);
     res.status(201).json(newOperator);
   } catch (error) {
     console.error('Error adding operator:', error);
