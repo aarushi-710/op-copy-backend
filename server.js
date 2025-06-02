@@ -18,18 +18,31 @@ connectDB().catch((error) => {
 app.use(cors({ origin: 'https://op-copy-frontend.vercel.app' }));
 app.use(express.json());
 
-// MQTT client setup for HiveMQ Cloud
-const mqttClient = mqtt.connect('wss://abbc751b5b434be4ad192133b471d7bb.s1.eu.hivemq.cloud:8883/mqtt', {
+// MQTT client setup
+const mqttClient = mqtt.connect('mqtt://abbc751b5b434be4ad192133b471d7bb.s1.eu.hivemq.cloud', {
+  port: 8883,
+  protocol: 'mqtts',
   username: 'hivemq.webclient.1748685268618',
   password: '.W9kNFm>Z8?lM35j%Ana',
+  clientId: `mqttjs_backend_${Math.random().toString(16).substr(2, 8)}`,
+  clean: true,
+  rejectUnauthorized: false,
+  reconnectPeriod: 1000,
+  connectTimeout: 30 * 1000,
 });
 
 mqttClient.on('connect', () => {
   console.log('Connected to HiveMQ Cloud MQTT broker');
 });
+
 mqttClient.on('error', (err) => {
   console.error('MQTT connection error:', err);
 });
+
+mqttClient.on('close', () => {
+  console.log('MQTT connection closed');
+});
+
 app.set('mqttClient', mqttClient);
 
 // Routes
