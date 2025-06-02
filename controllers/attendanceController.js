@@ -183,9 +183,10 @@ exports.getAttendance = async (req, res) => {
 
 exports.markAttendance = async (req, res) => {
   const { line } = req.params;
-  const { operatorId, timestamp } = req.body;
+  const { operatorId, date, timestamp } = req.body;
   const Attendance = getAttendanceModel(line);
   const Operator = getOperatorModel(line);
+
   try {
     if (!operatorId) {
       return res.status(400).json({ message: 'Operator ID is required' });
@@ -194,7 +195,6 @@ exports.markAttendance = async (req, res) => {
     if (isNaN(now.getTime())) {
       return res.status(400).json({ message: 'Invalid timestamp provided' });
     }
-    const date = now.toISOString().split('T')[0];
     const finalTimestamp = now.toISOString();
     console.log('Marking attendance with timestamp:', finalTimestamp);
 
@@ -236,8 +236,12 @@ exports.markAttendance = async (req, res) => {
     if (operator) {
       const mqttClient = req.app.get('mqttClient');
       if (mqttClient) {
-        const message = JSON.stringify({ ledIndex: operator.ledIndex, status: 'green' });
-        mqttClient.publish(`attendance/${line}`, message, (err) => {
+        const message = JSON.stringify({
+          ledIndex: operator.ledIndex,
+          status: 'green' // Present
+        });
+        
+        mqttClient.publish(`attendance/${line}/led`, message, (err) => {
           if (err) {
             console.error('Failed to publish to MQTT:', err);
           } else {
@@ -258,29 +262,31 @@ exports.markFailedAttendance = async (req, res) => {
   const { line } = req.params;
   const { station, timestamp } = req.body;
   const Operator = getOperatorModel(line);
-  try {
-    if (!station) {
-      return res.status(400).json({ message: 'Station is required' });
-    }
-    const now = new Date(timestamp || Date.now());
-    if (isNaN(now.getTime())) {
-      return res.status(400).json({ message: 'Invalid timestamp provided' });
-    }
 
-    // For simplicity, light up an error LED (e.g., index 16) in red
+  try {
+    // Get all operators for this station
+    const stationOperators = await Operator.find({ station });
+    
+    // Mark all operators in the station as absent (red LED)
     const mqttClient = req.app.get('mqttClient');
     if (mqttClient) {
-      const message = JSON.stringify({ ledIndex: 16, status: 'red' });
-      mqttClient.publish(`attendance/${line}`, message, (err) => {
-        if (err) {
-          console.error('Failed to publish to MQTT:', err);
-        } else {
-          console.log(`Published to MQTT: ${message}`);
-        }
+      stationOperators.forEach(operator => {
+        const message = JSON.stringify({
+          ledIndex: operator.ledIndex,
+          status: 'red' // Absent
+        });
+        
+        mqttClient.publish(`attendance/${line}/led`, message, (err) => {
+          if (err) {
+            console.error('Failed to publish to MQTT:', err);
+          } else {
+            console.log(`Published to MQTT: ${message}`);
+          }
+        });
       });
     }
 
-    res.status(200).json({ message: 'Failed attendance attempt recorded' });
+    res.status(200).json({ message: 'Failed attendance recorded' });
   } catch (error) {
     console.error('Error marking failed attendance:', error);
     res.status(500).json({ message: 'Error marking failed attendance', error: error.message });
