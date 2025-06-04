@@ -6,6 +6,7 @@ const operatorRoutes = require('./routes/operatorRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const mqtt = require('mqtt');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -24,7 +25,15 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+// Ensure images directory exists
+const imagesPath = path.join(__dirname, 'public', 'images');
+if (!fs.existsSync(imagesPath)) {
+  fs.mkdirSync(imagesPath, { recursive: true });
+}
+
+// Configure static file serving
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
 // MQTT client setup
 const mqttClient = mqtt.connect('mqtt://abbc751b5b434be4ad192133b471d7bb.s1.eu.hivemq.cloud', {

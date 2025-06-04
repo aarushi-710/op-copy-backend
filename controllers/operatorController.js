@@ -1,4 +1,17 @@
 const getOperatorModel = require('../models/Operator');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../public/images'));
+  },
+  filename: function (req, file, cb) {
+    cb(null, `operator-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 exports.getOperators = async (req, res) => {
   const { line } = req.params;
