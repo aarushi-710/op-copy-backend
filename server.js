@@ -15,7 +15,13 @@ connectDB().catch((error) => {
 });
 
 // CORS configuration for frontend
-app.use(cors({ origin: 'https://op-copy-frontend.vercel.app' }));
+app.use(cors({
+  origin: [
+    'https://op-copy-frontend.vercel.app',
+    'http://localhost:3000'  // for local development
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // MQTT client setup
