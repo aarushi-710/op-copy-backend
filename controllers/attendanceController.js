@@ -254,7 +254,7 @@ exports.markAttendance = async (req, res) => {
     res.status(201).json(formattedAttendance);
   } catch (error) {
     console.error('Error marking attendance:', error);
-    res.status(500).json({ message: 'Error marking attendance', error: error.message });
+    //res.status(500).json({ message: 'Error marking attendance', error: error.message });
   }
 };
 
