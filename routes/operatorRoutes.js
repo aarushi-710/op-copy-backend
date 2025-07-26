@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const { getOperators, addOperator, deleteOperator } = require('../controllers/operatorController');
